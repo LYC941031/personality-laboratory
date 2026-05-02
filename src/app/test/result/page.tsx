@@ -9,6 +9,7 @@ import {
   Clock,
   Target,
   AlertCircle,
+  Download,
 } from "lucide-react";
 import { useTestStore, type TestResult } from "@/store/test-store";
 import { getPersonalityBySlug } from "@/../data/personalities";
@@ -18,6 +19,7 @@ import { formatTime } from "@/lib/utils";
 import { ResultRadarChart, DimensionBars } from "@/components/test/result-chart";
 import { DimensionBar } from "@/components/type/dimension-bar";
 import { BookCard } from "@/components/mdx/book-card";
+import { PersonalityPortrait, downloadPortrait } from "@/components/result/personality-portrait";
 
 function getResult(): TestResult | null {
   // Check sessionStorage first (synchronous, no hydration issues)
@@ -81,49 +83,82 @@ export default function ResultPage() {
               borderWidth: 1,
             }}
           >
-            <div className="relative z-10 text-center">
-              <span
-                className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-4"
-                style={{ backgroundColor: personality.color }}
-              >
-                {personality.code}
-              </span>
-
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-3">
-                {personality.name}
-              </h1>
-
-              <p
-                className="text-xl sm:text-2xl font-medium mb-4"
-                style={{ color: personality.color }}
-              >
-                「{personality.tagline}」
-              </p>
-
-              <div className="flex items-center justify-center gap-4 text-sm text-muted">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  用时 {formatTime(result.timeSpent)}
+            <div className="relative z-10 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+              {/* Left: Text content */}
+              <div className="flex-1 text-center lg:text-left">
+                <span
+                  className="inline-block px-3 py-1 rounded-full text-xs font-bold text-white mb-4"
+                  style={{ backgroundColor: personality.color }}
+                >
+                  {personality.code}
                 </span>
-                <span className="flex items-center gap-1">
-                  <Target className="w-4 h-4" />
-                  置信度 {confidencePercent}%
-                </span>
+
+                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground mb-3">
+                  {personality.name}
+                </h1>
+
+                <p
+                  className="text-xl sm:text-2xl font-medium mb-4"
+                  style={{ color: personality.color }}
+                >
+                  「{personality.tagline}」
+                </p>
+
+                <div className="flex items-center justify-center lg:justify-start gap-4 text-sm text-muted">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-4 h-4" />
+                    用时 {formatTime(result.timeSpent)}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Target className="w-4 h-4" />
+                    置信度 {confidencePercent}%
+                  </span>
+                </div>
+
+                {secondary && secondary.slug !== personality.slug && (
+                  <p className="mt-4 text-sm text-muted">
+                    你可能还具有{" "}
+                    <Link
+                      href={`/types/${secondary.slug}`}
+                      className="font-medium underline"
+                      style={{ color: secondary.color }}
+                    >
+                      {secondary.name}
+                    </Link>{" "}
+                    的某些特质
+                  </p>
+                )}
               </div>
 
-              {secondary && secondary.slug !== personality.slug && (
-                <p className="mt-4 text-sm text-muted">
-                  你可能还具有{" "}
-                  <Link
-                    href={`/types/${secondary.slug}`}
-                    className="font-medium underline"
-                    style={{ color: secondary.color }}
-                  >
-                    {secondary.name}
-                  </Link>{" "}
-                  的某些特质
-                </p>
-              )}
+              {/* Right: Portrait */}
+              <div className="flex-shrink-0 flex flex-col items-center gap-3">
+                <PersonalityPortrait
+                  dimensionScores={result.dimensionScores}
+                  primaryType={result.primaryType}
+                  secondaryType={result.secondaryType}
+                  confidence={result.confidence}
+                  size={240}
+                />
+                <button
+                  onClick={() => {
+                    const canvas = document.querySelector(
+                      '[aria-label="人格抽象画像"]'
+                    ) as HTMLCanvasElement | null;
+                    if (canvas) {
+                      const typeName = personality?.name ?? "personality";
+                      downloadPortrait(canvas, `${typeName}-portrait.png`);
+                    }
+                  }}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium border transition-colors hover:bg-white/50"
+                  style={{
+                    color: personality.color,
+                    borderColor: personality.color + "40",
+                  }}
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  保存画像
+                </button>
+              </div>
             </div>
 
             <div

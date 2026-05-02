@@ -19,6 +19,29 @@ function cosineSimilarity(
   return dot / (Math.sqrt(normA) * Math.sqrt(normB));
 }
 
+function euclideanSimilarity(
+  a: Record<string, number>,
+  b: Record<string, number>
+): number {
+  const keys = Object.keys(a);
+  let sumSq = 0;
+  for (const k of keys) {
+    const diff = a[k] - (b[k] || 0);
+    sumSq += diff * diff;
+  }
+  const maxDist = Math.sqrt(keys.length);
+  return 1 - Math.sqrt(sumSq) / maxDist;
+}
+
+function combinedSimilarity(
+  a: Record<string, number>,
+  b: Record<string, number>
+): number {
+  const cos = cosineSimilarity(a, b);
+  const euc = euclideanSimilarity(a, b);
+  return cos * 0.4 + euc * 0.6;
+}
+
 export function calculateResult(
   answers: Record<number, number>,
   startedAt: string
@@ -68,7 +91,7 @@ export function calculateResult(
   const matchScores: Record<string, number> = {};
   for (const type of personalityTypes) {
     matchScores[type.slug] =
-      Math.round(cosineSimilarity(dimensionScores, type.dimensions) * 1000) /
+      Math.round(combinedSimilarity(dimensionScores, type.dimensions) * 1000) /
       1000;
   }
 
