@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Book } from "@/../data/books";
-import { ExternalLink } from "lucide-react";
 
 interface BookCardProps {
   book: Book;
@@ -25,7 +24,7 @@ export function BookCard({ book }: BookCardProps) {
         {book.summary}
       </p>
 
-      <div className="flex flex-wrap gap-1.5 mb-3">
+      <div className="flex flex-wrap gap-1.5">
         {book.tags.map((tag) => (
           <span
             key={tag}
@@ -33,21 +32,6 @@ export function BookCard({ book }: BookCardProps) {
           >
             {tag}
           </span>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {book.links.map((link) => (
-          <a
-            key={link.label}
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1 text-xs text-primary hover:text-primary-dark transition-colors"
-          >
-            {link.label}
-            <ExternalLink className="w-3 h-3" />
-          </a>
         ))}
       </div>
     </div>
